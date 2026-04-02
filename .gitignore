@@ -1,0 +1,42 @@
+# ==================== Virtual Environment ====================
+.venv/
+venv/
+env/
+ENV/
+
+# ==================== Python cache ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ==================== PyTorch / ML checkpoints ====================
+# Все чекпоинты (именно то, что ты упомянул — ckpt_00XXXX.pt и любые другие .pt/.pth)
+**/*.pt
+**/*.pth
+**/*.bin
+**/*.ckpt
+
+# ==================== Results (только большие файлы) ====================
+# Если вдруг в results появятся другие большие файлы — их тоже можно добавить сюда
+results/**/events.out.tfevents*
+results/**/*.log
+
+# ==================== Logs and temporary files ====================
+*.log
+*.tmp
+*.temp
+
+# ==================== IDE and editor ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==================== OS generated files ====================
+.DS_Store
+Thumbs.db
+/backbone/nanoGPT

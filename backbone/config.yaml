@@ -1,0 +1,58 @@
+# CRS-1 nanoGPT Configuration — Task 2.1
+# Minicalculus backbone: 4-layer GPT, d=384, ~2M params, custom tokenizer
+
+model:
+  n_layer: 4
+  n_head: 6          # 384 / 6 = 64 per head
+  n_embd: 384
+  block_size: 256     # max sequence length (minicalculus expressions are short)
+  bias: false         # no bias = faster, no degradation at this scale
+  dropout: 0.1
+  vocab_size: null    # filled at runtime from tokenizer
+
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 4   # effective batch = 128
+  max_iters: 10000
+  eval_interval: 500
+  eval_iters: 100
+  log_interval: 100
+  always_save_checkpoint: true
+  checkpoint_every: 1000            # save every 1k steps for Phase 3 Gnosis integration
+
+  # optimizer
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+
+  # lr schedule
+  decay_lr: true
+  warmup_iters: 200
+  lr_decay_iters: 10000
+  min_lr: 3.0e-5
+
+  # device
+  device: "cuda"         # change to "cpu" for debug runs
+  dtype: "bfloat16"      # use float32 if no bfloat16 support
+  compile: true          # torch.compile for ~30% speedup (PyTorch 2.0+)
+
+curriculum:
+  # For Agent-C (Task 2.3) — progressive curriculum L1→L4
+  levels: [1, 2, 3, 4]
+  steps_per_level: 2500    # 2500 * 4 levels = 10k total steps
+  mix_previous: true       # keep 20% of prior levels when advancing
+  prior_mix_ratio: 0.2
+
+# VRAM estimate at above config (batch_size=32, block_size=256, bf16):
+# Params: ~2.1M (4 MB), Activations: ~24 MB, Total: ~28 MB — well within 8GB
+# Even at float32: ~56 MB — trivial for RTX 4060 (8GB)
+vram_estimate_mb: 56       # conservative float32 estimate
+fits_8gb: true
+
+paths:
+  tokenizer: "backbone/tokenizer.json"
+  data_dir: "code/domain/"
+  out_dir_agent_r: "results/agent-r/checkpoints/"
+  out_dir_agent_c: "results/agent-c/checkpoints/"

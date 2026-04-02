@@ -1,0 +1,68 @@
+
+program: statement+
+
+statement: assignment
+         | solve_cmd
+         | simplify_cmd
+         | define_cmd
+         | quantified_stmt
+         | expression
+
+expression: comparison_expr
+
+comparison_expr: add_expr ((EQEQ | NEQ | LT | GT | LEQ | GEQ) add_expr)*
+
+add_expr: mul_expr ((PLUS | MINUS) mul_expr)*
+mul_expr: unary_expr ((STAR | SLASH) unary_expr)*
+unary_expr: MINUS unary_expr -> neg
+          | power_expr
+power_expr: atom (CARET atom)*
+atom: NUMBER             -> number
+    | LPAREN expression RPAREN -> paren
+    | func_call
+    | NAME               -> var
+
+func_call: NAME LPAREN arg_list RPAREN
+arg_list: (expression (COMMA expression)*)?
+
+assignment: NAME ASSIGN expression
+solve_cmd: SOLVE LPAREN equation COMMA NAME RPAREN
+simplify_cmd: SIMPLIFY LPAREN expression RPAREN
+equation: add_expr (EQEQ | NEQ | LT | GT | LEQ | GEQ) add_expr
+
+define_cmd: DEFINE NAME LPAREN param_list RPAREN ASSIGN expression
+param_list: (NAME (COMMA NAME)*)?
+quantified_stmt: (FORALL | EXISTS) NAME IN set_expr COLON expression
+set_expr: LBRACE add_expr RANGE add_expr RBRACE -> range_set
+        | NAME -> named_set
+
+NUMBER: /\d+(\.\d+)?/
+NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+PLUS: "+"
+MINUS: "-"
+STAR: "*"
+SLASH: "/"
+CARET: "^"
+ASSIGN.1: "="
+EQEQ.2: "=="
+NEQ.2: "!="
+LT.1: "<"
+GT.1: ">"
+LEQ.2: "<="
+GEQ.2: ">="
+LPAREN: "("
+RPAREN: ")"
+LBRACE: "{"
+RBRACE: "}"
+COMMA: ","
+COLON: ":"
+RANGE.2: ".."
+SOLVE.3: "solve"
+SIMPLIFY.3: "simplify"
+DEFINE.3: "define"
+FORALL.3: "forall"
+EXISTS.3: "exists"
+IN.3: "in"
+
+%ignore /\s+/
+%ignore /\/\/[^\n]*/
